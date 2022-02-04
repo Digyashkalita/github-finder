@@ -9,6 +9,8 @@ const GITHUB_TOKEN = process.env.REACT_APP_GITHUB_TOKEN;
 export const GithubProvider = ({ children }) => {
   const initialState = {
     users: [],
+    user: {},
+    repos: [],
     loading: false,
   };
   const [state, dispatch] = useReducer(githubReducer, initialState);
@@ -23,7 +25,7 @@ export const GithubProvider = ({ children }) => {
 
     const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
       headers: {
-        Authorization: `token: ${GITHUB_TOKEN}`,
+        Authorization: `token ${GITHUB_TOKEN}`,
       },
     });
     const { items } = await response.json();
@@ -32,6 +34,50 @@ export const GithubProvider = ({ children }) => {
       payload: items,
     });
   };
+
+  // Get search user
+  const getUser = async (login) => {
+    setloading();
+
+    const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+      },
+    });
+
+    if (response.status === 404) {
+      window.location = "./notfound";
+    } else {
+      const data = await response.json();
+
+      dispatch({
+        type: "GET_USER",
+        payload: data,
+      });
+    }
+  };
+
+  // // Get user repos
+  // const getUserRepos = async (login) => {
+  //   setloading();
+
+  //   const response = await fetch(`${GITHUB_URL}/users/${login}/repos?${params}`, {
+  //     headers: {
+  //       Authorization: `token ${GITHUB_TOKEN}`,
+  //     },
+  //   });
+
+  //   if (response.status === 404) {
+  //     window.location = "./notfound";
+  //   } else {
+  //     const data = await response.json();
+
+  //     dispatch({
+  //       type: "GET_USER",
+  //       payload: data,
+  //     });
+  //   }
+  // };
 
   //Clear users from state
   const clearUsers = () => dispatch({ type: "CLEAR_USERS" });
@@ -42,10 +88,11 @@ export const GithubProvider = ({ children }) => {
   return (
     <GithubContext.Provider
       value={{
-        users: state.users,
-        loading: state.loading,
+        ...state,
         searchUsers,
         clearUsers,
+        getUser,
+        // getUserRepos,
       }}
     >
       {children}
