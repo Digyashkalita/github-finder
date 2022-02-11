@@ -10,6 +10,7 @@ export const GithubProvider = ({ children }) => {
     repos: [],
     loading: false,
   };
+
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
   return (
@@ -23,4 +24,5 @@ export const GithubProvider = ({ children }) => {
     </GithubContext.Provider>
   );
 };
+
 export default GithubContext;
